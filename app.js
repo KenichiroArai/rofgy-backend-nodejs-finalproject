@@ -10,7 +10,7 @@ const SECRET_KEY = 'your_secret_key';
 
 mongoose.set('strictQuery', false);
 
-const uri =  "mongodb://root:<replace password>@localhost:27017";
+const uri =  "mongodb://root:VI5S2JnxIeCj36RWulJvEYyx@172.21.121.163:27017";
 mongoose.connect(uri,{'dbName':'SocialDB'});
 
 const User = mongoose.model('User', { username: String, email: String, password: String });
@@ -22,8 +22,32 @@ app.use(session({ secret: SECRET_KEY, resave: false, saveUninitialized: true, co
 
 
 // Insert your authenticateJWT Function code here.
+function authenticateJWT(req, res, next) {
+    const token = req.session.token;
+  
+    if (!token) return res.status(401).json({ message: 'Unauthorized' });
+  
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        req.user = decoded;
+        next();
+    } catch (error) {
+        return res.status(401).json({ message: 'Invalid token' });
+    }
+}
 
 // Insert your requireAuth Function code here.
+function requireAuth(req, res, next) {
+    const token = req.session.token;
+    if (!token) return res.redirect('/login');
+    try {
+        const decoded = jwt.verify(token, SECRET_KEY);
+        req.user = decoded;
+        next();
+    } catch (error) {
+        return res.redirect('/login');
+    }
+}
 
 // Insert your routing HTML code here.
 
